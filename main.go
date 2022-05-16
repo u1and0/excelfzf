@@ -14,6 +14,7 @@ func main() {
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{}) // エントリポイント
 	})
+	r.GET("/map", api.FetchMap)   // JSONを配信するAPI
 	r.GET("/list", api.FetchList) // JSONを配信するAPI
 	r.Run()
 }

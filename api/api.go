@@ -1,17 +1,20 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
 )
 
 var cells = Cells{}
 
 type (
-	Cells []Cell
+	Cells map[string]Cell
 	Cell  struct {
 		Name string `json:"name"`
 		Age  int    `json:"age"`
@@ -22,11 +25,11 @@ type (
 
 func (c *Cell) Parse(f *excelize.File) {
 	sheetName := "Sheet1"
-	c.Name, _ = f.GetCellValue(sheetName, "A1")
-	s, _ := f.GetCellValue(sheetName, "A2")
+	c.Name, _ = f.GetCellValue(sheetName, "B1")
+	s, _ := f.GetCellValue(sheetName, "B2")
 	c.Age, _ = strconv.Atoi(s)
-	c.ID = f.GetCellValue(sheetName, "A3")
-	c.Sex = f.GetCellValue(sheetName, "A4")
+	c.ID, _ = f.GetCellValue(sheetName, "B3")
+	c.Sex, _ = f.GetCellValue(sheetName, "B4")
 }
 
 func init() {
@@ -36,14 +39,32 @@ func init() {
 				var (
 					cell     = new(Cell)
 					filename = filepath.Base(path)
+					ext      = ".xlsx"
 				)
-				if filepath.Ext(path) == ".xlsx" {
+				if filepath.Ext(path) == ext {
 					f, _ := excelize.OpenFile(path)
 					cell.Parse(f)
-					id := filename[:len(filename)-5]
-					cell[id] = *cell
+					id := filename[:len(filename)-len(ext)]
+					fmt.Printf("%v", cell)
+					cells[id] = *cell
 				}
 				return nil
 			})
 	}()
+}
+
+func FetchMap(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, cells)
+}
+
+func FetchList(c *gin.Context) {
+	var (
+		i     int
+		array = make([]string, len(cells))
+	)
+	for k, e := range cells {
+		array[i] = fmt.Sprintf("%s %v", k, e)
+		i++
+	}
+	c.IndentedJSON(http.StatusOK, array)
 }
