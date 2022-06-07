@@ -33,8 +33,8 @@ func init() {
 	}()
 }
 
-// サーバー立ち上げて
-// http://localhost:8080/list で
+// Excel行をFZF検索できるサーバー立ち上げて
+// http://localhost:8080/list でExcelデータをJSONで返す
 func main() {
 	r := gin.Default()
 	r.Static("/static", "./static")
